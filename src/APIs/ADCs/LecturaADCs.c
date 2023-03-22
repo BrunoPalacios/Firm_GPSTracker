@@ -1,6 +1,6 @@
 #include "Lectura ADCs.h"
 
-#define NUMBER_OF_CONVERTIONS		3
+#define NUMBER_OF_CONVERTIONS		1
 
 
 static uint8_t		ConversionLista = 0;
@@ -122,14 +122,9 @@ static void ADC_TIM_DMA_Config(void){
 	ADC_InitStructure.ADC_ScanDirection = ADC_ScanDirection_Upward;
 	ADC_Init(ADC1, &ADC_InitStructure);
 
-	/* Convert the  ADC_Channnel_1  with 7.5 Cycles as sampling time */
-	ADC_ChannelConfig(ADC1, ADC_Channel_1 , ADC_SampleTime_71_5Cycles);				// PA2: Sensor presion
-
 	/* Convert the  ADC_Channnel_2  with 7.5 Cycles as sampling time */
-	ADC_ChannelConfig(ADC1, ADC_Channel_2 , ADC_SampleTime_71_5Cycles);				// PA2: Sensor presion
+	ADC_ChannelConfig(ADC1, ADC_Channel_2 , ADC_SampleTime_55_5Cycles);				// PA2: Sensor presion
 
-	/* Convert the  ADC_Channnel_3  with 7.5 Cycles as sampling time */
-	ADC_ChannelConfig(ADC1, ADC_Channel_3 , ADC_SampleTime_71_5Cycles);				// PA3: Sensor humo
 
 	/* ADC Calibration */
 	ADC_GetCalibrationFactor(ADC1);
