@@ -1,6 +1,7 @@
 "src/APIs/ADCs/LecturaADCs.o"
 "src/APIs/USART/USART.o"
 "src/APIs/USART/portUSART_STM32F072.o"
+"src/GPS.o"
 "src/main.o"
 "src/stm32f072_it.o"
 "src/syscalls.o"

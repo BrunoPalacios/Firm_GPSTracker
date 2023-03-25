@@ -36,24 +36,61 @@
 /* ------------------------------- Constants ------------------------------- */
 /* ---------------------------- Local data types --------------------------- */
 /* ---------------------------- Global variables --------------------------- */
-
-uint32_t				Systick = 0;
-
 /* ---------------------------- Local variables ---------------------------- */
 /* ----------------------- Local function prototypes ----------------------- */
 /* ---------------------------- Local functions ---------------------------- */
 /* ---------------------------- Global functions --------------------------- */
 
-uint32_t getSystick(void){
 
-	return Systick;
+
+void DMA1_Channel2_3_IRQHandler(void){
+
+	if( DMA_GetITStatus(DMA1_IT_HT3)){
+
+		DMA_ClearITPendingBit(DMA1_IT_HT3);
+
+	}else if(DMA_GetITStatus(DMA1_IT_TC3)){
+
+		DMA_ClearITPendingBit(DMA1_IT_TC3);
+	}
 }
 
-void SysTick_Handler(void){
 
-	Systick++;
+void DMA1_Channel4_5_6_7_IRQHandler(void){
+
+	if(DMA_GetITStatus(DMA1_IT_TC7)){
+
+		USART_IRQ_Tx(USART_3);
+		DMA_ClearITPendingBit(DMA1_IT_TC7);
+	}
+
+	if( DMA_GetITStatus(DMA1_IT_TE7)){
+
+		DMA_ClearITPendingBit(DMA1_IT_TE7);
+
+	}
+	// RX
+	if(DMA_GetITStatus(DMA1_IT_TC6)){
+
+		//USART_IRQ_Rx(USART_3);
+		DMA_ClearITPendingBit(DMA1_IT_TC6);
+	}
+
+	if(DMA_GetITStatus(DMA1_IT_TE6)){
+
+		DMA_ClearITPendingBit(DMA1_IT_TE6);
+	}
 }
 
+
+void TIM3_IRQHandler(void){
+
+	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET){
+
+		ISR_TimerUSART(USART_1);
+		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+	}
+}
 
 
 void TIM2_IRQHandler(void){
@@ -66,8 +103,14 @@ void TIM2_IRQHandler(void){
 }
 
 
+void USART1_IRQHandler(void){
+
+	USART_IRQ_Rx(USART_1);
+}
+
 void USART3_4_IRQHandler(void){
 
 	USART_IRQ_Rx(USART_3);
 }
+
 /* ------------------------------ End of file ------------------------------ */

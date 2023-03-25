@@ -26,24 +26,94 @@
 /* --------------------------------- Notes --------------------------------- */
 /* ----------------------------- Include files ----------------------------- */
 #include "main.h"
+#include "Global.h"
+
 #include "stdio.h"
 #include "string.h"
 #include "Pinout.h"
 #include "APIs/ADCs/Lectura ADCs.h"
 #include "USART.h"
-
+#include "GPS.h"
 /* ----------------------------- Local macros ------------------------------ */
 /* ------------------------------- Constants ------------------------------- */
-#define	BUFF_SIZE			256
 
 /* ---------------------------- Local data types --------------------------- */
 /* ---------------------------- Global variables --------------------------- */
+stGeneral Gen;
 /* ---------------------------- Local variables ---------------------------- */
 /* ----------------------- Local function prototypes ----------------------- */
 void Delay_ms(uint32_t Delay);
 void GPIO_ToggleBits(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 /* ---------------------------- Local functions ---------------------------- */
+void initIOs(void);
+/* ---------------------------- Global functions --------------------------- */
+
+int main(int argc, char *argv[]){
+
+	RCC_ClocksTypeDef	RCC_Clocks;
+
+	SystemCoreClockUpdate();
+
+	RCC_GetClocksFreq(&RCC_Clocks);
+
+	//SysTick_Config(SystemCoreClock / 1000);
+
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, DISABLE);						// Reduce consumption
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB, ENABLE);
+
+	initIOs();
+
+	//initADC();
+
+	while(1){
+
+		//USARTTask();
+
+		GPSTask(&Gen);
+
+		/*
+		procesoADCs();
+
+		if(portUSART_HayDatosDisponibles(USART_3)){
+
+			BufferUSART = portUSART_ApuntoRespuesta(USART_3, &LargoUSART);
+
+			sprintf(Buffer, "Recibi: %s\r\n", (char *) BufferUSART);
+			USART_Queue_Message(USART_3, (uint8_t *) Buffer, strlen(Buffer));
+
+			portUSART_BorroDatos(USART_3);
+		}
+		*/
+	}
+
+	return 0; // Never reach here
+}
+
+uint32_t getSystick(void){
+
+	return Gen.Systick;
+}
+
+void SysTick_Handler(void){
+
+	Gen.Systick++;
+}
+
+
+void Delay_ms(uint32_t Delay){
+
+	uint32_t LocalSystick = getSystick();
+
+	while(getSystick() - LocalSystick < Delay);
+
+}
+
+void GPIO_ToggleBits(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin){
+
+	GPIOx->ODR ^= GPIO_Pin;
+}
+
 void initIOs(void){
 
 	uint8_t					i = 0;
@@ -66,63 +136,6 @@ void initIOs(void){
 			}
 		}
 	}
-}
-
-/* ---------------------------- Global functions --------------------------- */
-
-int main(int argc, char *argv[]){
-
-	char			Buffer[512];
-
-	uint8_t			*BufferUSART = NULL;
-
-	uint16_t		i = 0;
-	uint16_t		LargoUSART = 0;
-
-	uint32_t		LocalSystick = 0;
-	uint32_t		LocalSystick2 = 0;
-
-	SysTick_Config(SystemCoreClock / 1000);
-
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, DISABLE);						// Reduce consumption
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB, ENABLE);
-
-	initIOs();
-
-	initADC();
-
-	while(1){
-
-		USARTTask();
-
-		procesoADCs();
-
-		if(portUSART_HayDatosDisponibles(USART_3)){
-
-			BufferUSART = portUSART_ApuntoRespuesta(USART_3, &LargoUSART);
-
-			sprintf(Buffer, "Recibi: %s\r\n", (char *) BufferUSART);
-			USART_Queue_Message(USART_3, (uint8_t *) Buffer, strlen(Buffer));
-
-			portUSART_BorroDatos(USART_3);
-		}
-	}
-
-	return 0; // Never reach here
-}
-
-
-void Delay_ms(uint32_t Delay){
-
-	uint32_t LocalSystick = getSystick();
-
-	while(getSystick() - LocalSystick < Delay);
-
-}
-
-void GPIO_ToggleBits(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin){
-
-	GPIOx->ODR ^= GPIO_Pin;
 }
 
 /* ------------------------------ End of file ------------------------------ */

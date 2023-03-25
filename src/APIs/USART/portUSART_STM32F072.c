@@ -17,7 +17,7 @@ const	uint32_t		USARTx[MAX_USARTS][ULTIMO_CAMPO_USART] = {
 		//13					14						15						16							17						18
 		 DMA1_Channel2_BASE, 	DMA1_Channel3_BASE, 	DMA1_Channel2_3_IRQn, 	DMA1_Channel2_3_IRQn, 		USART1_IRQn,			(uint32_t) (&(USART1->TDR)),
 		//19					20						21						22							23						24							25
-		 RCC_APB1Periph_TIM2,	TIM2_BASE, 				TIM2_IRQn, 				DMA1_FLAG_TC2, 				DMA1_FLAG_TE2, 			DMA1_FLAG_TC3, 				DMA1_FLAG_TE3,
+		 RCC_APB1Periph_TIM3,	TIM3_BASE, 				TIM3_IRQn, 				DMA1_FLAG_TC2, 				DMA1_FLAG_TE2, 			DMA1_FLAG_TC3, 				DMA1_FLAG_TE3,
 		 // 26
 		 (uint32_t) (&(USART1->RDR))},
 
@@ -50,7 +50,7 @@ void USART_Config(uint8_t Nro, uint8_t Mode, uint32_t Speed){
 	stUsart[Nro].Modo = Mode;
 	stUsart[Nro].Baudrate = Speed;
 	stUsart[Nro].PrioridadUSART = 3;
-	stUsart[Nro].UseTimer = 1;
+	stUsart[Nro].UseTimer = 0;
 	stUsart[Nro].Inicializada = 0x3B;					// Marca de inicialización
 }
 
@@ -107,7 +107,7 @@ void portInitUSART(uint8_t Nro){
 		RCC_APB1PeriphClockCmd(USARTx[Nro][CLK_TIM_USART], ENABLE);
 
 		// Timer 48Mhz / 2 -> 65535 / 24Mhz = 2.7mS max
-		TIM_TimeBaseStructure.TIM_Prescaler = 3;		// 2 * 2.7ms = 5.4ms
+		TIM_TimeBaseStructure.TIM_Prescaler = 53;		// 2 * 2.7ms = 5.4ms
 		TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 		TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
 		TIM_TimeBaseStructure.TIM_ClockDivision = 0;
@@ -122,7 +122,7 @@ void portInitUSART(uint8_t Nro){
 		NVIC_DisableIRQ(USARTx[Nro][TIM_USART_IRQ]);
 
 		TIM_Cmd((TIM_TypeDef *) USARTx[Nro][TIM_USART_NUM], ENABLE);
-		TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+		TIM_ITConfig((TIM_TypeDef *) USARTx[Nro][TIM_USART_NUM], TIM_IT_Update, ENABLE);
 
 		/* USR Config */
 
@@ -181,19 +181,20 @@ void portInitUSART(uint8_t Nro){
 		DMA_InitStructure[Nro].DMA_DIR = DMA_DIR_PeripheralSRC;
 		DMA_InitStructure[Nro].DMA_MemoryInc = DMA_MemoryInc_Enable;
 		DMA_InitStructure[Nro].DMA_PeripheralBaseAddr = USARTx[Nro][USART_RDR];
-		DMA_InitStructure[Nro].DMA_MemoryBaseAddr = (uint32_t)stUsart[Nro].BufferRX[0];
+		DMA_InitStructure[Nro].DMA_MemoryBaseAddr = (uint32_t) stUsart[Nro].BufferRX[0];
 		DMA_Init((DMA_Channel_TypeDef *)  USARTx[Nro][USART_RX_DMA_CHANNEL], &DMA_InitStructure[Nro]);
 
 		DMA_Cmd((DMA_Channel_TypeDef *) USARTx[Nro][USART_RX_DMA_CHANNEL], ENABLE);
 
-		DMA_ITConfig((DMA_Channel_TypeDef *) USARTx[Nro][USART_RX_DMA_CHANNEL], DMA_IT_TC, ENABLE);
-		DMA_ITConfig((DMA_Channel_TypeDef *) USARTx[Nro][USART_RX_DMA_CHANNEL], DMA_IT_TE, ENABLE);
+		//DMA_ITConfig((DMA_Channel_TypeDef *) USARTx[Nro][USART_RX_DMA_CHANNEL], DMA_IT_TC, ENABLE);
+		//DMA_ITConfig((DMA_Channel_TypeDef *) USARTx[Nro][USART_RX_DMA_CHANNEL], DMA_IT_TE, ENABLE);
 
 		USART_ClearFlag((USART_TypeDef *) USARTx[Nro][USART_NUM], USARTx[Nro][DMA_RX_FLAG_TC]);
 		USART_ClearFlag((USART_TypeDef *) USARTx[Nro][USART_NUM], USARTx[Nro][DMA_RX_FLAG_TE]);
 		USART_ClearFlag((USART_TypeDef *)USARTx[Nro][USART_NUM], USART_FLAG_IDLE);
 
 		USART_ITConfig((USART_TypeDef *)USARTx[Nro][USART_NUM], USART_IT_IDLE, ENABLE);
+		USART_ClearITPendingBit((USART_TypeDef *)USARTx[Nro][USART_NUM], USART_IT_IDLE);
 
 		USART_DMACmd((USART_TypeDef *) USARTx[Nro][USART_NUM], USART_DMAReq_Rx, ENABLE);
 	}
@@ -279,8 +280,6 @@ void USART_IRQ_Tx(uint8_t Nro){
 	u8MessageSent[Nro] = 1;
 }
 
-
-
 /* Recepción */
 
 
@@ -315,7 +314,7 @@ void portUSART_BorroDatos(uint8_t Nro){
 
 void USART_IRQ_Rx(uint8_t Nro){
 
-	uint8_t				Largo;
+	uint16_t			Largo;
 	DMA_Channel_TypeDef	*DMAx;
 
 	USART_ClearFlag((USART_TypeDef *) USARTx[Nro][USART_NUM], USARTx[Nro][DMA_RX_FLAG_TC]);
@@ -323,16 +322,21 @@ void USART_IRQ_Rx(uint8_t Nro){
 
 	if(USART_GetITStatus((USART_TypeDef *) USARTx[Nro][USART_NUM], USART_IT_IDLE)){
 
+		USART_ClearITPendingBit((USART_TypeDef *) USARTx[Nro][USART_NUM], USART_IT_IDLE);
+
 		if(stUsart[Nro].UseTimer == 0){
+
+			GPIO_ToggleBits(GPIOB, GPIO_Pin_2);
+			DMAx = (DMA_Channel_TypeDef	*)(USARTx[Nro][USART_RX_DMA_CHANNEL]);
 
 			DMA_Cmd((DMA_Channel_TypeDef *) USARTx[Nro][USART_RX_DMA_CHANNEL], DISABLE);
 
 			//stUsart[Nro].Indice++;
 			stUsart[Nro].Error = 0; // ??
 
-			DMAx = (DMA_Channel_TypeDef	*)(USARTx[Nro][USART_RX_DMA_CHANNEL]);
 			stUsart[Nro].Mensajes++;
-			Largo = stUsart[Nro].Largo[stUsart[Nro].Indice] = BUFF_SIZE - DMAx->CNDTR;
+			Largo = BUFF_SIZE - DMAx->CNDTR;
+			stUsart[Nro].Largo[stUsart[Nro].Indice] = BUFF_SIZE - DMAx->CNDTR;
 
 			// Canal de recepcion
 			DMA_InitStructure[Nro].DMA_BufferSize = BUFF_SIZE;
@@ -340,7 +344,7 @@ void USART_IRQ_Rx(uint8_t Nro){
 			DMA_InitStructure[Nro].DMA_MemoryInc = DMA_MemoryInc_Enable;
 			DMA_InitStructure[Nro].DMA_PeripheralBaseAddr = USARTx[Nro][USART_RDR];
 
-			stUsart[Nro].BufferRX[stUsart[Nro].Indice][Largo] = '\0';
+			//stUsart[Nro].BufferRX[stUsart[Nro].Indice][Largo] = '\0';
 
 			if(++stUsart[Nro].Indice == MAX_RX_BUFFERS)
 				stUsart[Nro].Indice = 0;
@@ -365,6 +369,8 @@ void USART_IRQ_Rx(uint8_t Nro){
 
 static void RestartResetTimer(uint8_t Nro){
 
+	GPIO_SetBits(GPIOB, GPIO_Pin_2);
+
 	TIM_SetCounter((TIM_TypeDef *) USARTx[Nro][TIM_USART_NUM], 0x0000);
 
 	TIM_ClearITPendingBit((TIM_TypeDef *) USARTx[Nro][TIM_USART_NUM], TIM_IT_Update);
@@ -375,8 +381,10 @@ static void RestartResetTimer(uint8_t Nro){
 
 void ISR_TimerUSART(uint8_t Nro){
 
-	uint8_t				Largo;
-	DMA_Channel_TypeDef	*DMAx;
+	uint16_t				Largo;
+	DMA_Channel_TypeDef		*DMAx;
+
+	GPIO_ResetBits(GPIOB, GPIO_Pin_2);
 
 	DMAx = (DMA_Channel_TypeDef	*)(USARTx[Nro][USART_RX_DMA_CHANNEL]);
 

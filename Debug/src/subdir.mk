@@ -4,18 +4,21 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../src/GPS.c \
 ../src/main.c \
 ../src/stm32f072_it.c \
 ../src/syscalls.c \
 ../src/system_stm32f0xx.c 
 
 OBJS += \
+./src/GPS.o \
 ./src/main.o \
 ./src/stm32f072_it.o \
 ./src/syscalls.o \
 ./src/system_stm32f0xx.o 
 
 C_DEPS += \
+./src/GPS.d \
 ./src/main.d \
 ./src/stm32f072_it.d \
 ./src/syscalls.d \

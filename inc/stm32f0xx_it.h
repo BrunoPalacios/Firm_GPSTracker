@@ -42,10 +42,12 @@ void NMI_Handler(void);
 void HardFault_Handler(void);
 void SVC_Handler(void);
 void PendSV_Handler(void);
-uint32_t getSystick(void);
-void SysTick_Handler(void);
-
-
+void TIM2_IRQHandler(void);
+void TIM3_IRQHandler(void);
+void DMA1_Channel2_3_IRQHandler(void);
+void DMA1_Channel4_5_6_7_IRQHandler(void);
+void USART1_IRQHandler(void);
+void USART3_4_IRQHandler(void);
 /*void PPP_IRQHandler(void);*/
 
 #ifdef __cplusplus
