@@ -33,10 +33,10 @@ endif
 all: GPSTracker.elf
 
 # Tool invocations
-GPSTracker.elf: $(OBJS) $(USER_OBJS) E:\CopiasLocales\Hardware\Embels\GPSTracker\Firmware/LinkerScript.ld
+GPSTracker.elf: $(OBJS) $(USER_OBJS) C:\Users\embel\OneDrive\Escritorio\Copias\ Locales\Embels\GPSTracker\Firmware/LinkerScript.ld
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU GCC Linker'
-	arm-none-eabi-gcc -mcpu=cortex-m0 -mthumb -mfloat-abi=soft -T"E:/CopiasLocales/Hardware/Embels/GPSTracker/Firmware/LinkerScript.ld" -Wl,-Map=output.map -Wl,--gc-sections -o "GPSTracker.elf" @"objects.list" $(USER_OBJS) $(LIBS) -lm
+	arm-none-eabi-gcc -mcpu=cortex-m0 -mthumb -mfloat-abi=soft -T"C:/Users/embel/OneDrive/Escritorio/Copias Locales/Embels/GPSTracker/Firmware/LinkerScript.ld" -Wl,-Map=output.map -Wl,--gc-sections -o "GPSTracker.elf" @"objects.list" $(USER_OBJS) $(LIBS) -lm
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build

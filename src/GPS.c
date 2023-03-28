@@ -8,6 +8,31 @@
 #include "Global.h"
 #include "GPS.h"
 
+/*
+ *
+$GNGLL,,,,,,V,M*79
+$GPGSA,A,1,,,,,,,,,,,,,25.5,25.5,25.5*02
+$BDGSA,A,1,,,,,,,,,,,,,25.5,25.5,25.5*13
+$GPGSV,1,1,00*79
+$BDGSV,1,1,00*68
+$GNRMC,,V,,,,,,,,,,M*4E
+$GNVTG,,,,,,,,,M*2D
+$GNZDA,,,,,,*56
+$GPTXT,01,01,01,ANTENNA OPEN*25
+$GNGGA,,,,,,0,00,25.5,,,,,,*64
+
+$GNGGA,,,,,,0,00,25.5,,,,,,*64
+$GNGLL,,,,,,V,M*79
+$GPGSA,A,1,,,,,,,,,,,,,25.5,25.5,25.5*02
+$BDGSA,A,1,,,,,,,,,,,,,25.5,25.5,25.5*13
+$GPGSV,1,1,00*79
+$BDGSV,1,1,00*68
+$GNRMC,,V,,,,,,,,,,M*4E
+$GNVTG,,,,,,,,,M*2D
+$GNZDA,,,,,,*56
+$GPTXT,01,01,01,ANTENNA OPEN*25
+
+ */
 
 void GPSTask(stGeneral *Gen){
 

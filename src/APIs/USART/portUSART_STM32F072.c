@@ -101,9 +101,10 @@ void portInitUSART(uint8_t Nro){
 		GPIO_Init((GPIO_TypeDef *) USARTx[Nro][USART_RX_GPIO_PORT], &GPIO_InitStructure);
 	}
 
-	if(stUsart[Nro].Modo & USART_Mode_Rx){
+	/*
 
-		/* Timer */
+	 if(stUsart[Nro].Modo & USART_Mode_Rx){
+
 		RCC_APB1PeriphClockCmd(USARTx[Nro][CLK_TIM_USART], ENABLE);
 
 		// Timer 48Mhz / 2 -> 65535 / 24Mhz = 2.7mS max
@@ -124,7 +125,6 @@ void portInitUSART(uint8_t Nro){
 		TIM_Cmd((TIM_TypeDef *) USARTx[Nro][TIM_USART_NUM], ENABLE);
 		TIM_ITConfig((TIM_TypeDef *) USARTx[Nro][TIM_USART_NUM], TIM_IT_Update, ENABLE);
 
-		/* USR Config */
 
 		NVIC_InitStructure.NVIC_IRQChannel = USARTx[Nro][USART_IRQn];
 		NVIC_InitStructure.NVIC_IRQChannelPriority = 0x04;
@@ -136,12 +136,13 @@ void portInitUSART(uint8_t Nro){
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 		NVIC_Init(&NVIC_InitStructure);
 	}
+	*/
 
-	// Configuro Interrupciones
-	NVIC_InitStructure.NVIC_IRQChannel = USARTx[Nro][USART_DMA_IRQ_TX];
-	NVIC_InitStructure.NVIC_IRQChannelPriority = 0x03;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
+//	// Configuro Interrupciones
+//	NVIC_InitStructure.NVIC_IRQChannel = USARTx[Nro][USART_DMA_IRQ_TX];
+//	NVIC_InitStructure.NVIC_IRQChannelPriority = 0x03;
+//	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//	NVIC_Init(&NVIC_InitStructure);
 
 	/* USART Config */
 	USART_InitStructure.USART_BaudRate = stUsart[Nro].Baudrate;
@@ -173,6 +174,11 @@ void portInitUSART(uint8_t Nro){
 	DMA_Init((DMA_Channel_TypeDef *)  USARTx[Nro][USART_TX_DMA_CHANNEL], &DMA_InitStructure[Nro]);
 
 	if(stUsart[Nro].Modo & USART_Mode_Rx){
+
+		NVIC_InitStructure.NVIC_IRQChannel = USARTx[Nro][USART_IRQn];
+		NVIC_InitStructure.NVIC_IRQChannelPriority = 0x04;
+		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+		NVIC_Init(&NVIC_InitStructure);
 
 		DMA_DeInit((DMA_Channel_TypeDef *) USARTx[Nro][USART_RX_DMA_CHANNEL]);
 

@@ -20,7 +20,7 @@
 #define	MAX_USARTS				2
 #define	MAX_TX_BUFFERS			5
 #define	MAX_RX_BUFFERS			5
-#define	BUFF_SIZE				600
+#define	BUFF_SIZE				1024
 
 #define	USART_1					0
 #define	USART_3					1
@@ -56,7 +56,7 @@
 
 #define	ULTIMO_CAMPO_USART		27
 
-
+#pragma pack(1)
 typedef struct{
 
 	uint8_t		Inicializada;
@@ -69,16 +69,17 @@ typedef struct{
 	uint8_t		Enviando;
 	uint8_t		Error;
 
-	uint16_t		UseTimer;
+	uint16_t	UseTimer;
 	uint16_t	Largo[MAX_RX_BUFFERS];
 
 	uint32_t	Baudrate;
 
-	uint8_t		BufferTX[MAX_TX_BUFFERS][128];
 	uint8_t		LargoBufferTX[MAX_TX_BUFFERS];
+	uint8_t		padding[3];
+	uint8_t		BufferTX[MAX_TX_BUFFERS][128];
 	uint8_t		BufferRX[MAX_RX_BUFFERS][BUFF_SIZE];
 
-} stportUSART __attribute__((aligned));
+} stportUSART;
 
 void portInitUSART(uint8_t Nro);
 
